@@ -57,8 +57,6 @@ export function createCamera(gameWindow){
     }
 
     function onMouseMove(event){
-        console.log('onMouseMove',event.button )
-
         const deltaX = (event.clientX - prevMouseX);
         const deltaY = (event.clientY - prevMouseY);
         //lidar com a rotação da camera

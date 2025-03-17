@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCamera } from './camera.js'
+import { createAssetInstance } from './assets.js';
 
 export function createScene() {
     // Inicializando a cena corretamente
@@ -15,9 +16,15 @@ export function createScene() {
     gameWindow.appendChild(renderer.domElement);
 
   
-
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let selectedObject = undefined;
+    
     let terrain = [];
-    let buildings = []
+    let buildings = [];
+
+    let onObjectSelected = undefined;
+
     function initialize(city){
         scene.clear();
         terrain = [];
@@ -25,11 +32,8 @@ export function createScene() {
         for(let x = 0 ; x < city.size;x++){
             const column = []
             for(let y = 0;y<city.size;y++){
-                  // geometria da garama
-                const geometry = new THREE.BoxGeometry(1, 1, 1);
-                const material = new THREE.MeshLambertMaterial({ color: 0x00aa00 });
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(x,-0.5,y);
+                const terrainId = city.data[x][y].terrainId;
+                const mesh = createAssetInstance(terrainId,x,y)
                 scene.add(mesh);
                 column.push(mesh)
             }
@@ -42,22 +46,19 @@ export function createScene() {
     function update(city){
         for(let x = 0 ; x < city.size;x++){
             for(let y = 0;y<city.size;y++){
-                const tile = city.data[x][y];
-                if(tile.building && tile.building.startsWith('building')){
-                    console.log(tile)
-                    const heigth = Number(tile.building.slice(-1))
-                    const buildingGeometry = new THREE.BoxGeometry(1, heigth, 1);
-                    const buildingMaterial = new THREE.MeshLambertMaterial({ color: 0x777777 });
-                    const buildingMesh = new THREE.Mesh(buildingGeometry, buildingMaterial);
-                    buildingMesh.position.set(x,heigth/2,y);
+                const currentBuildingId = buildings[x][y]?.userData.id;
+                const newBuildingId = city.data[x][y].buildingId;
 
-                    if(buildings[x,y]){
-                        scene.remove(buildings[x][y])
-                    }
-
-                    scene.add(buildingMesh);
-                    buildings[x][y] = buildingMesh;
-
+                if(!newBuildingId && currentBuildingId){
+                    scene.remove(buildings[x][y]);
+                    buildings[x][y] = undefined;
+                }
+                
+                //se os dados do medelo mudar, atuliza atualiza a malha
+                if(newBuildingId !== currentBuildingId){
+                    scene.remove(buildings[x][y]);
+                    buildings[x][y] = createAssetInstance(newBuildingId,x,y)
+                    scene.add(buildings[x][y])
                 }
             }
         }
@@ -91,7 +92,25 @@ export function createScene() {
     }
 
     function onMouseDown(event){
+        console.log('TESTE')
         camera.onMouseDown(event);
+
+        mouse.x =  (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+        mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse,camera.camera);
+
+        let intersections = raycaster.intersectObjects(scene.children,false);
+
+        if(intersections.length > 0){
+            if(selectedObject) selectedObject.material.emissive.setHex(0)
+            selectedObject = intersections[0].object;
+            selectedObject.material.emissive.setHex(0x555555);
+            
+            if(this.onObjectSelected){
+                this.onObjectSelected(selectedObject)
+            }
+        }
     }
 
     function onMouseUp(event){
@@ -103,6 +122,7 @@ export function createScene() {
     }
 
     return {
+        onObjectSelected,
         initialize,
         update,
         start,
