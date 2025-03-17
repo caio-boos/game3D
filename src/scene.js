@@ -92,7 +92,6 @@ export function createScene() {
     }
 
     function onMouseDown(event){
-        console.log('TESTE')
         camera.onMouseDown(event);
 
         mouse.x =  (event.clientX / renderer.domElement.clientWidth) * 2 - 1;

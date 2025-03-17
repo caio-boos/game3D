@@ -29,7 +29,7 @@ export function createCamera(gameWindow){
     updateCameraPosition()
 
     function onMouseDown(event){
-        console.log('mousedown',event.button )
+        // console.log('mousedown',event.button )
         
         if(event.button === LEFT_MOUSE_BUTTON){
             isLeftMouseDown = true;
@@ -43,7 +43,7 @@ export function createCamera(gameWindow){
     }
 
     function onMouseUp(event){
-        console.log('onMouseUp')
+        // console.log('onMouseUp')
 
         if(event.button === LEFT_MOUSE_BUTTON){
             isLeftMouseDown = false;

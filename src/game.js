@@ -2,16 +2,23 @@ import {createScene} from './scene.js' ;
 import {createCity} from './city.js'
 
 export function createGame(){
+    let activeToolId = ''
     const scene = createScene();
-    const city  = createCity(16) 
+    const city  = createCity(20) 
     
-    scene.initialize(city)
-    scene.onObjectSelected = (selectedObject) =>{
-        console.log('Game:',selectedObject)
+    scene.initialize(city);
 
+    scene.onObjectSelected = (selectedObject) =>{
         let {x,y} = selectedObject.userData;
         const tile = city.data[x][y];
-        console.log(tile)
+
+        if(activeToolId === 'bulldoze'){
+            tile.buildingId = undefined;
+            scene.update(city)
+        }else if(!tile.buildingId){
+            tile.buildingId = activeToolId;
+            scene.update(city)
+        }
     }
 
     // window.scene = scene;
@@ -24,6 +31,10 @@ export function createGame(){
         update(){
             city.update();
             scene.update(city)
+        },
+        setActiveToolId(toolId){
+            activeToolId = toolId
+            console.log(activeToolId)
         }
     }
 
