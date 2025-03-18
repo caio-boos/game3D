@@ -1,10 +1,10 @@
 import {createScene} from './scene.js' ;
 import {createCity} from './city.js'
-
+import buildingFactory from './buildings.js'
 export function createGame(){
     let activeToolId = ''
     const scene = createScene();
-    const city  = createCity(20) 
+    const city  = createCity(16) 
     
     scene.initialize(city);
 
@@ -15,8 +15,8 @@ export function createGame(){
         if(activeToolId === 'bulldoze'){
             tile.buildingId = undefined;
             scene.update(city)
-        }else if(!tile.buildingId){
-            tile.buildingId = activeToolId;
+        }else if(!tile.building){
+            tile.building = buildingFactory?.[activeToolId]();
             scene.update(city)
         }
     }
